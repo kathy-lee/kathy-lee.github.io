@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sigtry.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.15.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Recently, I’m learning Apollo project which is an open source project for autonoumous driving. At beginning I hoped I can focus on only the perception module, but soon I realized it’s not possible to">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apollo Cyber Component Intro">
+<meta property="og:url" content="https://sigtry.io/2023/05/14/cyber-component-intro/index.html">
+<meta property="og:site_name" content="Sigtry">
+<meta property="og:description" content="Recently, I’m learning Apollo project which is an open source project for autonoumous driving. At beginning I hoped I can focus on only the perception module, but soon I realized it’s not possible to">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://sigtry.io/images/component_structure.png">
+<meta property="article:published_time" content="2023-05-14T17:49:50.000Z">
+<meta property="article:modified_time" content="2023-05-26T20:17:29.291Z">
+<meta property="article:author" content="Sigtry Tech.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://sigtry.io/images/component_structure.png">
+
+
+<link rel="canonical" href="https://sigtry.io/2023/05/14/cyber-component-intro/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://sigtry.io/2023/05/14/cyber-component-intro/","path":"/2023/05/14/cyber-component-intro/","title":"Apollo Cyber Component Intro"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Apollo Cyber Component Intro | Sigtry</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Sigtry</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">sth. interesting about signals and machine learning</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/home/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-blog"><a href="/" rel="section"><i class="fa fa-pen-to-square fa-fw"></i>blog</a></li><li class="menu-item menu-item-demos"><a href="/demos/" rel="section"><i class="fa fa-flask fa-fw"></i>demos</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-address-card fa-fw"></i>About</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Important-concept-items-in-Cyber-component"><span class="nav-number">1.</span> <span class="nav-text">Important concept items in Cyber component</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Initialization-of-a-Cyber-component-and-data-receiving-x2F-processing-inside"><span class="nav-number">2.</span> <span class="nav-text">Initialization of a Cyber component and data receiving&#x2F;processing inside</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I-MODE-REALITY"><span class="nav-number">2.1.</span> <span class="nav-text">I. MODE_REALITY</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#II-MODE-SIMULATION"><span class="nav-number">2.2.</span> <span class="nav-text">II. MODE_SIMULATION</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-transimit-in-Cyber-framework"><span class="nav-number">3.</span> <span class="nav-text">Data transimit in Cyber framework</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Break-down-of-cyber-recorder-play"><span class="nav-number">3.1.</span> <span class="nav-text">1. Break down of cyber_recorder play</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Data-transmitt-process"><span class="nav-number">3.2.</span> <span class="nav-text">2. Data transmitt process</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sigtry Tech.</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://sigtry.io/2023/05/14/cyber-component-intro/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sigtry Tech.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Apollo Cyber Component Intro | Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Apollo Cyber Component Intro
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-05-14 19:49:50" itemprop="dateCreated datePublished" datetime="2023-05-14T19:49:50+02:00">2023-05-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-26 22:17:29" itemprop="dateModified" datetime="2023-05-26T22:17:29+02:00">2023-05-26</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>2.6k</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>9 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Recently, I’m learning Apollo project which is an open source project for autonoumous driving. At beginning I hoped I can focus on only the perception module, but soon I realized it’s not possible to go without touching the bottom layer – Cyber RT framework.<br>At the time when I’m learning now, there was not much info about the code strucuture and process chain can be found from the official documents in the project. This blog is my summary on this(version 8.0). I will put it to the following parts:</p>
+<ul>
+<li>Important concept items in Cyber component</li>
+<li>Initialization of a Cyber component and data receiving&#x2F;processing inside </li>
+<li>Data transimit in Cyber framework</li>
+<li>Perception module break down</li>
+</ul>
+<h2 id="Important-concept-items-in-Cyber-component"><a href="#Important-concept-items-in-Cyber-component" class="headerlink" title="Important concept items in Cyber component"></a>Important concept items in Cyber component</h2><p>The official info <a target="_blank" rel="noopener" href="https://cyber-rt.readthedocs.io/en/latest/CyberRT_Terms.html">CyberRT Terms</a> gives definitions of important concept terms in Cyber framework. For people who are not familiar with ROS system like me, will still have no clue about those terms. I drew a picture below to show the basic structure of <code>Component</code> class. Basic <code>Component</code> class doesn’t have a <code>writer</code> memeber, but almost all perception components like Camera detection component and lidar detection component they have declared a <code>writer</code> as they need to output the process result to other components.</p>
+<p><img src="/../images/component_structure.png" alt="alt text"></p>
+<p>As the picture shows, a component can have multiple readers, each reader will use its receiver to subscribe a message type. The same rule for writers, a writer will use its tranmitter to send out the message. Transmitting or receiving a specific message type will use the channel id as the identifier, which is inside the <code>role_attr</code> member variable of a transmitter or a receiver as you can see in the picture.</p>
+<p>Component class encapsulates the data processing process for a module, and also provides developers the interfaces to customize the initialization and the process in <code>Init()</code> and <code>Proc()</code>, which are invoked inside <code>Initialize()</code> and <code>Process()</code> memeber functions.</p>
+<h2 id="Initialization-of-a-Cyber-component-and-data-receiving-x2F-processing-inside"><a href="#Initialization-of-a-Cyber-component-and-data-receiving-x2F-processing-inside" class="headerlink" title="Initialization of a Cyber component and data receiving&#x2F;processing inside"></a>Initialization of a Cyber component and data receiving&#x2F;processing inside</h2><p>Apollo provides two ways to launch a module: <code>mainboard</code> and <code>cyber_launch</code>. Example commands:\</p>
+<ul>
+<li><code>mainboard -d *.dag</code></li>
+<li><code>cyber_launch start *.launch</code></li>
+</ul>
+<p>In perception module, the order during loading a module is: <br><code>launch file -&gt; DAG file -&gt; Component</code> <br>A launch file can include several DAG module files, means it could start mulitiple modules. A DAG file is the config file of module topology, it includes the components which are put into this module.</p>
+<p>As <code>cyber_launch</code> will invoke <code>mainboard</code> to start a module, here I will break down the process of <code>mainboard</code>. From <code>mainboard.cc</code> we can know: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mainboard \</span><br><span class="line">    -&gt; moduleController::Init() \</span><br><span class="line">        -&gt; moduleController::LoadAll() \</span><br><span class="line">            -&gt; for loop of moduleController::LoadModule(DagConfig) \</span><br><span class="line">                -&gt; ClassLoadManager::CreateClassObj(Compnent_name) \</span><br><span class="line">                    -&gt; Component::Initialize(Component_config) \</span><br></pre></td></tr></table></figure>
+
+<p>In <code>Component.h</code> there are 5 partial template specializations for class template <code>Component</code>, which can handle one to four message type cases(described as M0,M1,M2,M3). Here we take the two message types case(M0,M1) as example to analyze the initialization process.</p>
+<p>Before diving into code, an important concept <code>RunMode</code> needs to be clarified first. <code>RunMode</code> is a simple enum, there are two mode types defined: </p>
+<ul>
+<li><code>MODE_SIMULATION</code></li>
+<li><code>MODE_REALITY</code></li>
+</ul>
+<p>And the default mode is set to <code>MODE_REALITY</code> in <code>cyber.pb.conf</code> file. <code>MODE_SIMULATION</code> is mainly used in test code. <br>The initialization process and data processing for those two modes are quite different. Here is the break down for each mode type:</p>
+<h3 id="I-MODE-REALITY"><a href="#I-MODE-REALITY" class="headerlink" title="I. MODE_REALITY"></a>I. <code>MODE_REALITY</code></h3><p>The initialization of a component under this mode has the following steps: \</p>
+<ol>
+<li>Create a node  <code>node_</code></li>
+<li>Execute user customized <code>Init()</code> function </li>
+<li>Load config for reader </li>
+<li>Create <code>reader1</code> for M1, create <code>reader0</code> for M0, put them all into <code>readers_</code> <br> 4.1Initialize readers with <code>reader_ptr-&gt;Init()</code></li>
+<li>Define function <code>func</code> which will invoke data process function of the messages M0,M1 </li>
+<li>Create a <code>DataVisitor&lt;M0, M1&gt;</code> <code>dv</code> with reader configs </li>
+<li>Create a <code>RoutineFactory</code> <code>factory = croutine::CreateRoutineFactory&lt;M0, M1&gt;(func, dv)</code>. It actually defines the coroutine function which will be used to create corountine in the next step </li>
+<li>Create a Task(coroutine) <code>sched-&gt;CreateTask(factory, node_-&gt;Name())</code></li>
+</ol>
+<p>We need to break down even deeper of some steps above (4.1, 5, 7, 8) to understand this whole process. </p>
+<p>In 4.1, look into the steps of <code>Reader&lt;MessageT&gt;::Init()</code> : <br>4.1.1 Define a lambda function <code>func</code> as following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">if (reader_func_ != nullptr) &#123;</span><br><span class="line">    func = [this](const std::shared_ptr&lt;MessageT&gt;&amp; msg) &#123;</span><br><span class="line">        this-&gt;Enqueue(msg);</span><br><span class="line">        this-&gt;reader_func_(msg);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    func = [this](const std::shared_ptr&lt;MessageT&gt;&amp; msg) &#123; </span><br><span class="line">        this-&gt;Enqueue(msg); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>4.1.2 Create a <code>DataVisitor&lt;MessageT&gt;</code> <code>dv</code> with the specific message type <br>4.1.3 Create a RoutineFactory <code>factory = croutine::CreateRoutineFactory&lt;MessageT&gt;(func, dv)</code> <br>4.1.4 Create a Task <code>sched-&gt;CreateTask(factory, croutine_name_)</code> <br>4.1.5 Create a receiver <code>receiver_</code>with message type config<br>4.1.6 Add this receiver into the channel topology as a listener of the corresponding reader </p>
+<p>Notice steps 4.1.1 to 4.1.4 are very similar to steps 5 to 8, it seems like repeating steps but actually not. In our case(M0, M1), there will be together 3 coroutines(named as <code>CRoutine</code> class in the project) created. The coroutine which is directly created in <code>Component::Initialize()</code> is with name <code>node_-&gt;Name()</code>, but the other 2 coroutines which are created in <code>Reader::Init()</code> are with name <code>role_attr_.node_name() + &quot;_&quot; + role_attr_.channel_name()</code>. Looking at the <code>func</code> defintion in 4.1.1, all readers under <code>MODE_REALITY</code> will be created without <code>reader_func_</code>, so it will go to <code>else</code> branch(<code>this-&gt;Enqueue(msg)</code>). <code>Enqueue(msg)</code> will execute <code>blocker_-&gt;Publish(msg)</code>，which writes <code>msg</code> into the message queue <code>published_msg_queue_</code> of <code>blocker_</code>.</p>
+<p>In 5, a lambda function <code>func</code> is defined as following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">auto func = [self](const std::shared_ptr&lt;M0&gt;&amp; msg0, const std::shared_ptr&lt;M1&gt;&amp; msg1) &#123;</span><br><span class="line">    auto ptr = self.lock();</span><br><span class="line">    if (ptr) &#123;</span><br><span class="line">      ptr-&gt;Process(msg0, msg1);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      AERROR &lt;&lt; &quot;Component object has been destroyed.&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>In 7, a coroutine function is defined as a lambda function as following. There are 5 function templates for <code>CreateRoutineFactory</code> to handle multiple message types. For the coroutine which is directly created in <code>Component::Initialize()</code>(we name it here as<code>cr</code>), the function <code>f</code> following is the <code>func</code> defined in step 5. For the coroutines which are crated in <code>Reader::Init()</code>(we name them here as <code>cr_M0</code>, <code>cr_M1</code>), the function <code>f</code> following is the <code>func</code> defined in step 4.1.1. So coroutine <code>cr</code> is in charge of fetching and processing the incoming messages(M0, M1 type), coroutine <code>cr_M0</code> will fetch the coming M0 message and push into the message queue, same for coroutine <code>cr_M1</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">factory.create_routine = [=]() &#123;</span><br><span class="line">    return [=]() &#123;</span><br><span class="line">        std::shared_ptr&lt;M0&gt; msg0;</span><br><span class="line">        std::shared_ptr&lt;M1&gt; msg1;</span><br><span class="line">        for (;;) </span><br><span class="line">        &#123;</span><br><span class="line">            CRoutine::GetCurrentRoutine()-&gt;set_state(RoutineState::DATA_WAIT);</span><br><span class="line">            if (dv-&gt;TryFetch(msg0, msg1)) &#123;</span><br><span class="line">            f(msg0, msg1);</span><br><span class="line">            CRoutine::Yield(RoutineState::READY);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">            CRoutine::Yield();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Till now, we know all the coroutines crerated during the component initialization and the jobs they will do. Next is to be clear about the event triggering process. \</p>
+<p>In 8, after the coroutine is created and dispatched(the dispatch policy is defined in <code>SchedulerClassic</code> and <code>SchedulerChoreography</code> class implemenation), an important call back function is registered to <code>DataVisitor</code> object <code>dv</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">visitor-&gt;RegisterNotifyCallback([this, task_id]() &#123;</span><br><span class="line">    if (cyber_unlikely(stop_.load())) &#123; return; &#125;</span><br><span class="line">    this-&gt;NotifyProcessor(task_id);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>From the definition, it seems to wake up the corotuine, and it should be triggered when new data&#x2F;messages come. Indeed it is, but the process is not so straightforward: <br>In step 4.1.5, a receiver is created with a lambda function input as following, this lambda function will be assigned to the member variable of <code>Receiver</code> class : <code>msg_listener_</code>. Another member function <code>OnNewMessage()</code> is a listener of new message data, when new message data comes, and it will execute callback function <code>msg_listener_</code>. I will show the loop of message transmitting and receiving in next section, here only focus on receiver side. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">CreateReceiver&lt;MessageT&gt;(</span><br><span class="line">  role_attr, [](const std::shared_ptr&lt;MessageT&gt;&amp; msg,</span><br><span class="line">                const transport::MessageInfo&amp; msg_info,</span><br><span class="line">                const proto::RoleAttributes&amp; reader_attr) &#123;</span><br><span class="line">    (void)msg_info;</span><br><span class="line">    (void)reader_attr;</span><br><span class="line">    PerfEventCache::Instance()-&gt;AddTransportEvent(</span><br><span class="line">        TransPerf::DISPATCH, reader_attr.channel_id(),</span><br><span class="line">        msg_info.seq_num());</span><br><span class="line">    data::DataDispatcher&lt;MessageT&gt;::Instance()-&gt;Dispatch(</span><br><span class="line">        reader_attr.channel_id(), msg);</span><br><span class="line">    PerfEventCache::Instance()-&gt;AddTransportEvent(</span><br><span class="line">        TransPerf::NOTIFY, reader_attr.channel_id(),</span><br><span class="line">        msg_info.seq_num());</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+<p>The trigger process when receiving new message data is: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">`OnNewMessage(msg, msg_info)` \</span><br><span class="line">    -&gt; `msg_listener` func \</span><br><span class="line">        -&gt; `DataDispatcher&lt;MessageT&gt;::Instance()-&gt;Dispatch(reader_attr.channel_id(), msg)` \</span><br><span class="line">            -&gt; `buffer-&gt;Fill(msg)` + `notifier_-&gt;Notify(channel_id)` \</span><br><span class="line">                -&gt; `notifier-&gt;callback()` \</span><br></pre></td></tr></table></figure>
+<p>To understand details in the above trigger process, it’s better to take a look at those classes: <code>DataVisitor</code>, <code>DataDispatcher</code>, <code>DataNotifier</code>, <code>ChannelBuffer</code>. <code>DataDispatcher</code> class and <code>DataNotifier</code> class are typical singleton pattern. In short words, when receives new M0 message data <code>msg0</code>, it will be written into <code>ChannelBuffer</code> <code>buffer_m0_</code>. And <code>notifier-&gt;callback()</code> will call exactly the callback function registered to <code>DataVisitor</code> object <code>dv</code> in step 8: <code>this-&gt;NotifyProcessor(task_id)</code>, which means it does indeed “wake up” the coroutine <code>cr_M0</code> to execute the coroutine function defined in step 7. The same process for receiving new M1 message data. \<br>For the coroutine <code>cr</code> we named before, its <code>TryFetch(msg0, msg1)</code> will fuse the new M0 and M1 message data first before processing the data: <code>data_fusion_-&gt;Fusion(&amp;next_msg_index_, m0, m1)</code>. In summary, all receivers push new coming data into the corresponding channel buffer, the main coroutine will fetch data from all buffers and process them.</p>
+<h3 id="II-MODE-SIMULATION"><a href="#II-MODE-SIMULATION" class="headerlink" title="II. MODE_SIMULATION"></a>II. <code>MODE_SIMULATION</code></h3><p>The initialization of a component under this mode has the following steps: \</p>
+<ol>
+<li>Create a node  <code>node_</code> </li>
+<li>Execute user customized <code>Init()</code> function </li>
+<li>Load config for readers</li>
+<li>Create <code>reader1</code> for M1 without reader function <br> 4.1 Initialize the reader with <code>reader_ptr-&gt;Init()</code></li>
+<li>Define function <code>func</code> which will invoke data process function of the messages M0,M1</li>
+<li>Create <code>reader0</code> for M0 with reader function <code>func</code> defined in last step, put all readers into <code>readers_</code> <br> 6.1Initialize readers with <code>reader_ptr-&gt;Init()</code></li>
+</ol>
+<p>In <code>MODE_REALITY</code>, readers are <code>Reader</code> class ojbects; in <code>MODE_SIMULATION</code>, readers are <code>IntraReader</code> class objects, its initialization <code>Init()</code> is quite different: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BlockerManager::Instance()-&gt;Subscribe&lt;MessageT&gt;(</span><br><span class="line">      this-&gt;role_attr_.channel_name(), this-&gt;role_attr_.qos_profile().depth(), this-&gt;role_attr_.node_name(),</span><br><span class="line">      std::bind(&amp;IntraReader&lt;MessageT&gt;::OnMessage, this, std::placeholders::_1));</span><br></pre></td></tr></table></figure>
+<p>Simliar to <code>OnNewMessage()</code> invokes <code>msg_listener</code> in <code>MODE_REALITY</code>, here is <code>OnMessage()</code> invokes <code>msg_callback_</code>. But <code>msg_callback_</code> is not defined when creating the receiver like <code>MODE_REALITY</code>. There is an important difference need to note: <code>MODE_SIMULATION</code> uses reader and writer classes <code>IntraReader</code> and <code>IntraWriter</code>, it does’t have transmitter and receiver level as <code>MODE_REALITY</code>, Which means it doesn’t use transmitter and receiver to handle messages but it uses <code>Blocker</code> instead. <code>OnMessage()</code> and <code>msg_callback_</code> are direct members of <code>IntraReader</code> class, but in <code>MODE_REALITY</code>, <code>OnNewMessage()</code> and <code>msg_listener</code> are on the receiver level. Also there will no coroutines and <code>Datavisitor</code> objects created. \</p>
+<p>The <code>msg_callback_</code> is defined in step 5 as following. It will be used to initialize <code>reader0</code> only. <code>reader1</code> is initialized without <code>msg_callback</code>. In 3 message type (M0,M1,M2) cases, <code>reader1</code> and <code>reader2</code> are initialized without <code>msg_callback_</code>. Because the below function does the really data processing for all new message data(M0 <code>msg0</code> as input, M1 <code>msg1</code> got from <code>blocker1</code>), it doesn’t need to repeat in every reader. Next session will talk about the process of tranmitting message data into <code>Blocker</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">auto blocker1 = blocker::BlockerManager::Instance()-&gt;GetBlocker&lt;M1&gt;(config.readers(1).channel());</span><br><span class="line"></span><br><span class="line">auto func = [self, blocker1](const std::shared_ptr&lt;M0&gt;&amp; msg0) &#123;</span><br><span class="line">    auto ptr = self.lock();</span><br><span class="line">    if (ptr) &#123;</span><br><span class="line">        if (!blocker1-&gt;IsPublishedEmpty()) &#123;</span><br><span class="line">            auto msg1 = blocker1-&gt;GetLatestPublishedPtr();</span><br><span class="line">            ptr-&gt;Process(msg0, msg1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">    AERROR &lt;&lt; &quot;Component object has been destroyed.&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="Data-transimit-in-Cyber-framework"><a href="#Data-transimit-in-Cyber-framework" class="headerlink" title="Data transimit in Cyber framework"></a>Data transimit in Cyber framework</h2><p>Here “data transmit” corresponds to the above session “data receiving&#x2F;processing” which means the message data. <br>Apollo provides an API <code>cyber_recorder play</code> to play back a record file, together with <code>mainboard</code> or <code>cyber_launch start</code> will simulate a whole data transmit-&gt;receive-&gt;process loop. So it’s a good entrance to understand the data transmitt process.</p>
+<h3 id="1-Break-down-of-cyber-recorder-play"><a href="#1-Break-down-of-cyber-recorder-play" class="headerlink" title="1. Break down of cyber_recorder play"></a>1. Break down of <code>cyber_recorder play</code></h3><p>First is the break down of <code>cyber_recorder/main.cc</code> : </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cyber_recorder command=&quot;play&quot; in main.cc </span><br><span class="line">    -&gt; player.Init() </span><br><span class="line">        -&gt; producer_-&gt;Init()</span><br><span class="line">    -&gt; player.Start()</span><br><span class="line">        -&gt; producer-&gt;Start() + consumer_::Start()</span><br></pre></td></tr></table></figure>
+<p>There are 3 classess used in this process: <code>Play</code>, <code>PlayTask</code>, <code>PlayTaskBuffer</code>, <code>PlayTaskProducer</code> and <code>PlayTaskConsumer</code>. First, look at <code>PlayTaskProducer::Init()</code>. It will execute the following two functions: \</p>
+<ul>
+<li><code>ReadRecordInfo()</code>: Create <code>recorder_reader</code> object(s) to read the channel message infos from record file(s), save them into <code>MessageTypeMap msg_types_</code>.  </li>
+<li><code>CreateWriters()</code>: Create a node <code>node_</code>, then for loop with <code>msg_types_</code> to create writers for all message types, put them into <code>WriterMap writers_</code>.</li>
+</ul>
+<p>Then we look at <code>PlayTaskProducer::Start()</code>. It will directly run a thread: \</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">produce_th_.reset(new std::thread(&amp;PlayTaskProducer::ThreadFunc, this))</span><br></pre></td></tr></table></figure>
+<p>And the <code>ThreadFunc</code> does the following: </p>
+<ul>
+<li>Calculate the number of data transmissions according to the start&#x2F;end time and time interval of the record, put it in a container object <code>record_viewer</code>;</li>
+<li>For loop with <code>record_viewer</code> to create a <code>PlayTask</code> and pushes it into <code>task_buffer_</code> each time. For each item, it will use its corresponding channel name to find the corresponding writer in <code>writers_</code>, and use this writer and raw message to create a <code>PlayTask</code>.</li>
+</ul>
+<p>Notice that class <code>Player</code> has member variables: \</p>
+<ul>
+<li><code>ConsumerPtr consumer_</code></li>
+<li><code>ProducerPtr producer_</code></li>
+<li><code>TaskBufferPtr task_buffer_</code>: a shared pointer which is shared among <code>Player</code>, <code>PlayTaskProducer</code> and <code>PlayTaskConsumer</code> classes.</li>
+</ul>
+<p>In <code>PlayTaskConsumer::Start</code> could find similar <code>ThreadFunc</code> as in <code>PlayTaskProducer::Start()</code>. It will execute:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">`task = task_buffer_-&gt;Front()` -&gt; `task-&gt;Play()` -&gt; `task_buffer_-&gt;PopFront()` </span><br></pre></td></tr></table></figure>
+<p>So the <code>producer_</code> object keeps pushing new <code>PlayTask</code> ojbects to <code>task_buffer_</code>, while <code>consumer_</code> keeps pulling <code>PlayTask</code> and executing <code>PlayTask::Play()</code>, and pops out from <code>task_buffer_</code> after execution finished.</p>
+<p>The only left thing is <code>PlayTask::Play()</code>. It executes the kernal job of transmitting data: <code>writer_-&gt;Write(msg_)</code>.</p>
+<h3 id="2-Data-transmitt-process"><a href="#2-Data-transmitt-process" class="headerlink" title="2. Data transmitt process"></a>2. Data transmitt process</h3><p>Before going into <code>Writer::Write()</code>, it’s necessary to know how this writer is initialized. In <code>NodeChannelImpl::CreateWriter()</code> can find the writer will be a <code>Writer</code> class object under <code>MODE_REALITY</code>, will be a <code>IntraWriter</code> class object under <code>MODE_SIMULATION</code>. </p>
+<p>I. <code>MODE_REALITY</code></p>
+<p>In <code>Writer::Init()</code>, it will do the following:</p>
+<ol>
+<li>Create a <code>Tranmitter</code> object <code>transmitter_</code></li>
+<li>Add this tranmitter into the channel topology (so the receivers can subscribe to this channel message)</li>
+</ol>
+<p>In step 1, according to the <code>mode</code> value, <code>CreateTransmitter()</code> will create <code>transmitter_</code> from one of the following classes:</p>
+<ul>
+<li>IntraTransmitter</li>
+<li>ShmTransmitter</li>
+<li>RtpsTransmitter</li>
+<li>HybridTransmitter (default)</li>
+</ul>
+<p>Notice this <code>mode</code> has nothing to do with the <code>RUN_MODE</code>, this mode means the relationship between communicating nodes under <code>MODE_REALITY</code> which has the transmitter and receiver level. There are 4 modes defined: INTRA means communicating in the process, SHM means communicating between the host process, RTPS means conmmunicating across the host, HYBRID means mixed with those 3 modes.</p>
+<p>After the writer initialization, we go to <code>Writer::Write()</code> to see inside. Here takes <code>INTRA</code> mode as example case.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">writer_-&gt;Write(msg_)</span><br><span class="line">    -&gt; transmitter_-&gt;Transmit(msg_ptr)</span><br><span class="line">        -&gt; dispatcher_-&gt;OnMessage(channel_id_, msg, msg_info)</span><br><span class="line">            -&gt; handler-&gt;Run(message, message_info)</span><br><span class="line">                -&gt; (*signals_[oppo_id])(msg, msg_info) </span><br></pre></td></tr></table></figure>
+<p>Don’t mix <code>IntraDispatcher</code> object <code>dispatcher_</code> with <code>DataDispatcher</code> class instance here, the first one is on transmitting side, the second one is on receiving side, both of them are singleton pattern. Notice <code>dispatcher_</code> is a shared pointer in both <code>IntraTransmitter</code> class and <code>IntraReceiver</code> class. </p>
+<p>To figure out what the last step <code>(*signals_[oppo_id])(msg, msg_info) </code> does, need to back to the receiver part. Still remember member function <code>Receiver&lt;M&gt;::OnNewMessage(msg, msg_info)</code> which is the beginning point of the receiving process, this function will be written into member variable <code>msg_listeners_</code> in <code>dispatcher_</code> object when <code>IntraReceiver</code> object initializes as following: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dispatcher_-&gt;AddListener&lt;M&gt;(this-&gt;attr_, std::bind(&amp;IntraReceiver&lt;M&gt;::OnNewMessage, this, std::placeholders::_1, std::placeholders::_2))</span><br><span class="line">    -&gt; handler-&gt;Connect(self_attr.id(), opposite_attr.id(), listener)</span><br><span class="line">        -&gt; signals_[oppo_id]-&gt;Connect(listener)</span><br></pre></td></tr></table></figure>
+<p>The last step <code>signals_[oppo_id]-&gt;Connect(listener)</code> will make <code>signals_[oppo_id]</code> as a callable object with the listener function, <code>(*signals_[oppo_id])(msg, msg_info)</code> will call the lisntener function <code>OnNewMessage(msg, msg_info)</code>. This is called the signal and slot mechanism. \</p>
+<p>So this is the whole loop of data transmitting and receiving process for <code>MODE_REALITY</code>.</p>
+<p>II. <code>MODE_SIMULATION</code></p>
+<p>In <code>IntraWriter::Init()</code>, it will create a <code>blocker</code> object according to the message type, and put it to <code>BlockerMap blockers_</code> in <code>BlockerManager</code> singleton instance.<br>About <code>IntraWriter::Write()</code> we can break down to: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">writer_-&gt;Write(msg_)</span><br><span class="line">    -&gt; blocker_manager_-&gt;Publish&lt;MessageT&gt;(this-&gt;role_attr_.channel_name(), msg)</span><br><span class="line">        -&gt; blocker-&gt;Publish(msg)</span><br><span class="line">            -&gt; Enqueue(msg)</span><br><span class="line">                -&gt; published_msg_queue_.push_front(msg)</span><br><span class="line">            -&gt; Notify(msg)</span><br><span class="line">                -&gt; call published_callbacks_</span><br></pre></td></tr></table></figure>
+<p>Remember we have known that <code>IntraReader::Init()</code> will do the following, it will register <code>OnMessage()</code> into <code>published_callbacks</code>, which is a member variable of <code>Blocker</code> class. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BlockerManager::Instance()-&gt;Subscribe&lt;MessageT&gt;(</span><br><span class="line">      this-&gt;role_attr_.channel_name(), this-&gt;role_attr_.qos_profile().depth(), this-&gt;role_attr_.node_name(),</span><br><span class="line">      std::bind(&amp;IntraReader&lt;MessageT&gt;::OnMessage, this, std::placeholders::_1))</span><br></pre></td></tr></table></figure>
+<p>So the data transmitting and receiving loop for <code>MODE_SIMULATION</code> is also clear.</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/04/14/Rethink-about-Fourier-expansion-and-signal-expansion/" rel="prev" title="Rethink about Fourier expansion and signal expansion">
+                  <i class="fa fa-chevron-left"></i> Rethink about Fourier expansion and signal expansion
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/05/25/perception-module-intro/" rel="next" title="Apollo Perception Module Intro">
+                  Apollo Perception Module Intro <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sigtry Tech.</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="Word count total">5k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">19 mins.</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"kathy-lee","repo":"kathy-lee.github.io","client_id":"afd8a1a51f16f3b4dda7","client_secret":"16bd09e911875f9781e16d18a43cd6ed0ff62ff0","admin_user":"kathy-lee","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"en","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"f04481684365e01c5a865554f439b183"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

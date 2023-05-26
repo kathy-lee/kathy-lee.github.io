@@ -21,25 +21,25 @@
 
     <meta name="description" content="Why do we make Fourier transform to signals? The first thing that came to my mind for this question is that the Fourier transform has many nice features, it can transfer complex convolution in the tim">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Rethink about Fourier expansion and signal expansion">
-<meta property="og:url" content="https://sigtry.io/2023/04/14/Rethink-about-Fourier-expansion-and-signal-expansion/index.html">
+<meta property="og:title" content="Re-understanding the Fourier expansion and signal expansion">
+<meta property="og:url" content="https://sigtry.io/2023/04/14/signal-expansion/index.html">
 <meta property="og:site_name" content="Sigtry">
 <meta property="og:description" content="Why do we make Fourier transform to signals? The first thing that came to my mind for this question is that the Fourier transform has many nice features, it can transfer complex convolution in the tim">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-04-14T13:49:53.000Z">
-<meta property="article:modified_time" content="2023-04-14T13:59:32.570Z">
+<meta property="article:modified_time" content="2023-05-26T20:14:26.131Z">
 <meta property="article:author" content="Sigtry Tech.">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://sigtry.io/2023/04/14/Rethink-about-Fourier-expansion-and-signal-expansion/">
+<link rel="canonical" href="https://sigtry.io/2023/04/14/signal-expansion/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://sigtry.io/2023/04/14/Rethink-about-Fourier-expansion-and-signal-expansion/","path":"/2023/04/14/Rethink-about-Fourier-expansion-and-signal-expansion/","title":"Rethink about Fourier expansion and signal expansion"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://sigtry.io/2023/04/14/signal-expansion/","path":"/2023/04/14/signal-expansion/","title":"Re-understanding the Fourier expansion and signal expansion"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Rethink about Fourier expansion and signal expansion | Sigtry</title>
+<title>Re-understanding the Fourier expansion and signal expansion | Sigtry</title>
   
 
 
@@ -152,7 +152,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://sigtry.io/2023/04/14/Rethink-about-Fourier-expansion-and-signal-expansion/">
+    <link itemprop="mainEntityOfPage" href="https://sigtry.io/2023/04/14/signal-expansion/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -165,12 +165,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Rethink about Fourier expansion and signal expansion | Sigtry">
+      <meta itemprop="name" content="Re-understanding the Fourier expansion and signal expansion | Sigtry">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Rethink about Fourier expansion and signal expansion
+          Re-understanding the Fourier expansion and signal expansion
         </h1>
 
         <div class="post-meta-container">
@@ -180,9 +180,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-04-14 15:49:53 / Modified: 15:59:32" itemprop="dateCreated datePublished" datetime="2023-04-14T15:49:53+02:00">2023-04-14</time>
+      <time title="Created: 2023-04-14 15:49:53" itemprop="dateCreated datePublished" datetime="2023-04-14T15:49:53+02:00">2023-04-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-26 22:14:26" itemprop="dateModified" datetime="2023-05-26T22:14:26+02:00">2023-05-26</time>
     </span>
 
   
@@ -199,14 +205,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">Word count in article: </span>
-      <span>103</span>
+      <span>1k</span>
     </span>
     <span class="post-meta-item" title="Reading time">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">Reading time &asymp;</span>
-      <span>1 mins.</span>
+      <span>4 mins.</span>
     </span>
 </div>
 
@@ -218,6 +224,21 @@
     
     <div class="post-body" itemprop="articleBody">
         <p>Why do we make Fourier transform to signals? The first thing that came to my mind for this question is that the Fourier transform has many nice features, it can transfer complex convolution in the time domain into a simple product in the frequency domain, it can simplify the filter design in frequency domain, its linearity, symmetry property etc. But those nice features can’t explain well why we need it but not other orthogonal expansions. While I’m looking for the answer to this question, my understanding of Fourier expansion gets refreshed and also extended to some applications of signal expansion in other fields.</p>
+<p>Transforming a signal to a domain gives a new representation of the signal, and the best transform of a signal is related to the problem you want to solve, it should greatly simplify the analysis and solving process to the problem. The same rule applies to the Fourier transform.  The answer for the question above is simply as: Fourier expansion is the best transform for the LTI system, because the complex exponential function is the eigenfunction of the LTI system. It means if we input a complex exponential signal to a LTI system, the output will still be a complex exponential signal, the only change will be the amplitude:</p>
+<p>$$HX&#x3D;kX$$</p>
+<p>$X$ is the eigenfunction $e^{j\omega t}$, $k$ is the system frequency response $H(j\omega)$, $H$ is the system function (also called as transfer function).</p>
+<p>So if we decompose the input as a series of eigenfunction, the analysis of the LTI system will be greatly simplified: We only need to figure out the constant coefficient $k$ which is the system frequency response $H(j\omega)$, then we can get the output of the LTI system even when the system function is complicated. A very important subset of LTI systems is the systems represented by a differential equation with linear constant coefficients. Fourier transform can convert differential or difference equations into polynomial equations, in frequency domain, the differential calculation is transformed into a simple multiplication, which greatly simplifies the complexity of the problem, therefore it’s very useful to this kind of system analysis. </p>
+<p>In parallel to the LTI system, there is also the LSI system(Linear Shift-Invariant System) in image processing. LSI system defines shift-invariant property in spatial domain: the input shift will lead to a corresponding shift in the output. The LSI system has the same eigenfunction – complex exponential function as the LTI system. We can use the same way of Fourier transform to analyze LSI system response or LSI filters in frequency domain. </p>
+<p>Till now, we only talk about Fourier transform in a deterministic way, i.e. on deterministic signals. The next thing that came to my mind is, is there a similar transform or expansion for random signals or random processes? Is the answer power spectral density (PSD) which is the Fourier transform of the autocorrelation function? It turns out there is something more general than PSD. </p>
+<p>To be clear, a random signal is an infinite signal in the time domain and does not have the conditions for integration, so it cannot be directly Fourier transformed. PSD defined from Fourier transform of the autocorrelation function is also known as spectral decomposition Theorems for stationary processes or stationary sequences. Here we mean generalized stationary process by stationary process. The statistical characteristics of a stationary process are completely determined by its correlation function, and the spectral function (or spectral density) of a stationary process completely describes its statistical characteristics. And for general random processes, this conclusion does not hold. In general random processes, Karhunen-Loève expansion provides a complete characterization. It decomposes the sample function of a random process with a set of orthogonal basis functions, and the decomposed coefficients are uncorrelated random variables. </p>
+<p>$$x(t)&#x3D;\lim_{N\rightarrow+\infty}\sum_{i&#x3D;1}^Nx_i(t)\phi(t), 0 \leq t \leq T$$</p>
+<p>This expansion is ensured by a integral equation:</p>
+<p>$$\lambda_j\phi_j(t)&#x3D;\int_0^TK_x(t,u)\phi_j(u)du$$</p>
+<p>$K_x(t,u)$ is the covariance function, $\lambda_j$ is called eigenvalue, basis function $\phi_j(t)$ is called eigenfunction. </p>
+<p>A special case in Karhunen-Loève expansion is, when the stochastic process is a stationary process, the basis function set turns out to be the complex exponential function. So $e^{j\omega t}$ is the eigenfunction of the stationary process,  the eigenvalue $\lambda$  is the power spectral density at frequency $\omega$.</p>
+<p>Karhunen-Loève expansion not only provides a theoretically complete characterization for stochastic processes, it has an important application in signal detection and estimation. With Karhunen-Loève expansion, we can transform the continuous-time signal detection to a set of uncorrelated random variables and build the detection statistics based on them. Especially under Gaussian random process, we can prove that those expansion coefficients are independent Gaussian random variables. In the simple binary detection, if we choose $\phi_1(t)&#x3D;s(t)$ as the first basis function in expansion, we will get the first expansion coefficient $r_1&#x3D;\int_0^Ts(t)r(t)dt$. This is a sufficient statistics for this detection, other basis functions in expansion don’t affect the decision at all. It’s also called the correlated receiver. In the general binary detection, we choose $\phi_1(t)&#x3D;s(t)$ as the first basis function and $\phi_2(t)&#x3D;[s_0(t)-\rho s_1(t)]&#x2F; \sqrt{1-\rho^2}$ as the second basis function in expansion, we get $r_1$ and $r_2$ and then construct the sufficient statistics with their difference. This can be generalized to M-ary detection under noise.</p>
+<p>Note that the correlated receiver for signal detection can also be directly deduced by maximum likelihood principle if the signal observations are uncorrelated with each other, but Karhunen-Loève expansion can generally apply for signal observations which may be correlated.</p>
+<p>In signal estimation, Karhunen-Loève expansion can give us the best linear time-varying filter(estimator) for a sample function of a random process under MSE metric, the filter is determined by the eigenfunction and eigenvalue of the covariance function of the random process. In practice, we usually choose the first K maximum items as a good approximation. This is also known as principal component analysis (PCA) in the data dimensionality reduction. </p>
 
     </div>
 
@@ -231,13 +252,10 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/04/14/signal-expansion/" rel="prev" title="Re-understanding the Fourier expansion and signal expansion">
-                  <i class="fa fa-chevron-left"></i> Re-understanding the Fourier expansion and signal expansion
-                </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2023/05/14/cyber-component-intro/" rel="next" title="Apollo Cyber Component Intro">
-                  Apollo Cyber Component Intro <i class="fa fa-chevron-right"></i>
+                <a href="/2023/04/14/Rethink-about-Fourier-expansion-and-signal-expansion/" rel="next" title="Rethink about Fourier expansion and signal expansion">
+                  Rethink about Fourier expansion and signal expansion <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
@@ -332,7 +350,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
 
-<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"kathy-lee","repo":"kathy-lee.github.io","client_id":"afd8a1a51f16f3b4dda7","client_secret":"16bd09e911875f9781e16d18a43cd6ed0ff62ff0","admin_user":"kathy-lee","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"en","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"cbb5144f3c906ca639f63eda74080c82"}</script>
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"kathy-lee","repo":"kathy-lee.github.io","client_id":"afd8a1a51f16f3b4dda7","client_secret":"16bd09e911875f9781e16d18a43cd6ed0ff62ff0","admin_user":"kathy-lee","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"en","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"e1830045b7c829a9e7a12b6f00e2bd56"}</script>
 <script src="/js/third-party/comments/gitalk.js"></script>
 
 </body>

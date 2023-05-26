@@ -120,7 +120,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -138,6 +138,379 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://sigtry.io/2023/05/25/perception-module-intro/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sigtry Tech.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/05/25/perception-module-intro/" class="post-title-link" itemprop="url">Apollo Perception Module Intro</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-05-25 20:40:50" itemprop="dateCreated datePublished" datetime="2023-05-25T20:40:50+02:00">2023-05-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-26 22:20:47" itemprop="dateModified" datetime="2023-05-26T22:20:47+02:00">2023-05-26</time>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>1.5k</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>5 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>In last article, the general data processing chain inside a Cyber Component is introduced in detail. We know that the customized iniitalization and data processing of a perception component (for example the Lidar detection component) will be implemented in its <code>Init()</code> and <code>Proc()</code> member functions. In this article I would like to make the perception process clear, but won’t illustrate the algorithm details.</p>
+<p>People will want to see where are the deep learning models being invoked in perception at first, actually there are several levels till it appears. Like the last article, I will begin from a <code>dag</code> file where to launch the perception. Under <code>/modules/perception/production/dag</code> path there are several <code>dag</code> files which will combine different perception components into a module. Each perception component class is a child class of <code>Cyber::Component</code>. All perception components are defined under <code>/modules/perception/onboard</code> path. Here will take <code>dag_streaming_perception_lgsvl.dag</code> as example, which includes the following perception components:</p>
+<ul>
+<li>LidarDetectionComponent</li>
+<li>LidarTrackingComponent</li>
+<li>RadarDetectionComponent</li>
+<li>MultiSensorFusionComponent</li>
+</ul>
+<p>And at the time of writing, the code structure of the perception process for different sensors has not been unified yet, especially radar perception part. I will address them separately.</p>
+<h2 id="Init-of-a-perception-component"><a href="#Init-of-a-perception-component" class="headerlink" title="Init() of a perception component"></a><code>Init()</code> of a perception component</h2><h3 id="I-Lidar-perception-component"><a href="#I-Lidar-perception-component" class="headerlink" title="I. Lidar perception component"></a>I. Lidar perception component</h3><p>First, take a look at the structure of <code>LidarDetectionComponent</code> class:</p>
+<p><img src="/../images/lidardetectioncomponent_structure.png" alt="alt text"></p>
+<p>From the config section of <code>LidarDetectionComponent</code> in the <code>dag</code> file, can see the config file path for this component: <br><code>config_file_path: &quot;/apollo/modules/perception/production/conf/perception/lidar/velodyne128_detection_conf.pb.txt&quot;</code><br>This file contains the following config items:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sensor_name: &quot;velodyne128&quot;</span><br><span class="line">detector_name: &quot;LidarObstacleDetection&quot;</span><br><span class="line">enable_hdmap: true</span><br><span class="line">lidar_query_tf_offset: 0</span><br><span class="line">lidar2novatel_tf2_child_frame_id: &quot;velodyne128&quot;</span><br><span class="line">output_channel_name: &quot;/perception/inner/DetectionObjects&quot;</span><br><span class="line">lidar_detection_conf_dir : &quot;/apollo/modules/perception/pipeline/config&quot;</span><br><span class="line">lidar_detection_conf_file : &quot;lidar_detection_pipeline.pb.txt&quot;</span><br></pre></td></tr></table></figure>
+<p>In <code>LidarDetectionComponent::Init()</code>, it will do:</p>
+<ol>
+<li>Load the config items above with <code>GetProtoConfig()</code> into the member variables related to config info</li>
+<li>Create an <code>Writer&lt;LidarFrameMessage&gt;</code> object <code>writer_</code> </li>
+<li><code>GetProtoFromFile()</code> loads configs from <code>lidar_detection_conf_file : &quot;lidar_detection_pipeline.pb.txt&quot;</code> into <code>lidar_detection_config_</code> </li>
+<li>Create an <code>LidarObstacleDetection</code> object <code>lidar_detection_pipeline_</code></li>
+<li>Initialize <code>lidar_detection_pipeline_</code> with <code>lidar_detection_config_</code> from step 3</li>
+</ol>
+<p>Let’s take a look at the file “lidar_detection_pipeline.pb.txt”:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">pipeline_type: LIDAR_DETECTION</span><br><span class="line"></span><br><span class="line">stage_type: POINTCLOUD_PREPROCESSOR</span><br><span class="line">stage_type: POINTCLOUD_DETECTION_PREPROCESSOR</span><br><span class="line">stage_type: MAP_MANAGER</span><br><span class="line">stage_type: CNN_SEGMENTATION</span><br><span class="line">stage_type: POINTCLOUD_DETECTION_POSTPROCESSOR</span><br><span class="line">stage_type: OBJECT_BUILDER</span><br><span class="line">stage_type: OBJECT_FILTER_BANK</span><br><span class="line"></span><br><span class="line">.....</span><br><span class="line">stage_config: &#123;</span><br><span class="line">  stage_type: CNN_SEGMENTATION</span><br><span class="line">  enabled: true</span><br><span class="line"></span><br><span class="line">  cnnseg_config: &#123;</span><br><span class="line">    sensor_name: &quot;velodyne128&quot;</span><br><span class="line">    param_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_param.conf&quot;</span><br><span class="line">    proto_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_caffe/deploy.prototxt&quot;</span><br><span class="line">    weight_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_caffe/deploy.caffemodel&quot;</span><br><span class="line">    engine_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_caffe/engine.conf&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">.....</span><br></pre></td></tr></table></figure>
+<p>It defines 7 stages, these stage objects will be created during the initialization process:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">LidarDetectionComponent::Init()</span><br><span class="line">    -&gt; LidarDetectionComponent::InitAlgorithmPlugin() </span><br><span class="line">        -&gt; lidar_detection_pipeline_-&gt;Init(lidar_detection_config_) </span><br><span class="line">            -&gt; Pipeline::Initialize(pipeline_config)</span><br><span class="line">                -&gt; for loop with Pipeline::CreateStage(stage_type)</span><br><span class="line">                    -&gt; stage_ptr-&gt;Init(stage_config_map_[stage_type])</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>Each stage has its own class definition and is a child class of <code>Stage</code>. In this example config file, <code>CNNSegementation</code> is configured as the kern detector. Its <code>Init()</code> will prepare the model:</p>
+<ol>
+<li>Load configs from its <code>stage_config</code> section in “lidar_detection_pipeline.pb.txt” file, which includes 4 files: \<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">param_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_param.conf&quot; \</span><br><span class="line">proto_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_caffe/deploy.prototxt&quot; \</span><br><span class="line">weight_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_caffe/deploy.caffemodel&quot; \</span><br><span class="line">engine_file: &quot;/apollo/modules/perception/production/data/perception/lidar/models/cnnseg/cnnseg128_caffe/engine.conf&quot; \</span><br></pre></td></tr></table></figure></li>
+<li>From the param_file, assign values to a couple of feature member variables : range_, width_, height_, min_height_, max_heigt_, output_names, input_names. Here is part of the content of param_file “cnnseg128_param.conf”:<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.....</span><br><span class="line">model_type: &quot;RTNet&quot;</span><br><span class="line">.....</span><br><span class="line">ground_detector: &quot;SpatioTemporalGroundDetector&quot;</span><br><span class="line">roi_filter: &quot;HdmapROIFilter&quot;</span><br><span class="line">remove_ground_points: true</span><br><span class="line"></span><br><span class="line">network_param &#123; ... &#125;</span><br><span class="line">feature_param &#123; ... &#125;</span><br></pre></td></tr></table></figure></li>
+<li>Create an reference object <code>inference_</code> with <code>model_type</code> config, here is <code>RTNet</code></li>
+<li>Initialize the inference object <code>inference_</code>, which will create the network and input&amp;output blobs with TensorRT APIs</li>
+<li>Initialize the feature generator <code>feature_generator_</code>, the features are the input of the inference network</li>
+</ol>
+<p>Besides <code>RTNet</code>, Apollo provides also <code>CaffeNet</code>, <code>PaddleNet</code>, <code>TorchDet</code>, <code>OnnxObstacleDetector</code> and <code>MINet</code> network classes, they are all inherited from <code>inference</code> class, and all of these classes have the kern member variables <code>blobs_</code> <code>input_names_</code> <code>output_names_</code> for the model network input and output and the kern member function <code>infer()</code>. The function <code>CreateInferenceByName</code> works as an inference factory, it creates an corresponding inference object by the model type config. At the time of writing this article, the other lidar detector classes <code>CenterPoint</code> <code>MaskPillarsDetection</code> <code>PointPillarsDetection</code> <code>NCutSegementation</code> and the radar detector class <code>ContiArsDetector</code> are not using this function yet. </p>
+<h3 id="II-Radar-perception-component"><a href="#II-Radar-perception-component" class="headerlink" title="II. Radar perception component"></a>II. Radar perception component</h3><p>Unlike <code>LidarDetectionComponent</code> class, <code>RadarDetectionComponent</code> class doesn’t have pipeline member variable from <code>Pipeline</code> class which contains a couple of stages. </p>
+<p><img src="/../images/radardetectioncomponent.png" alt="alt text"></p>
+<p>In <code>RadarDetectionComponent::Init()</code>, it will create and initialize the following 3 member variables:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. hdmap_input_-&gt;Init()</span><br><span class="line">2. radar_preprocessor_-&gt;Init()</span><br><span class="line">3. radar_perception_-&gt;Init(pipeline_name_) which includes: </span><br><span class="line">        detector_-&gt;Init() </span><br><span class="line">        roi_filter_-&gt;Init() </span><br><span class="line">        tracker_-&gt;Init() </span><br></pre></td></tr></table></figure>
+
+<p>There are two config sections of <code>RadarDetectionComponent</code> in the <code>dag</code> file: “FrontRadarDetection” and “RearRadarDetection”. Take the first one as example, can see the config file path for this component: <br><code>config_file_path: &quot;/apollo/modules/perception/production/conf/perception/radar/front_radar_component_conf.pb.txt&quot;</code> <br>This file contains the following config items:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">radar_name: &quot;radar_front&quot;</span><br><span class="line">tf_child_frame_id: &quot;radar_front&quot;</span><br><span class="line">radar_forward_distance: 200.0</span><br><span class="line">radar_preprocessor_method: &quot;ContiArsPreprocessor&quot;</span><br><span class="line">radar_perception_method: &quot;RadarObstaclePerception&quot;</span><br><span class="line">radar_pipeline_name: &quot;FrontRadarPipeline&quot;</span><br><span class="line">odometry_channel_name: &quot;/apollo/localization/pose&quot;</span><br><span class="line">output_channel_name: &quot;/perception/inner/PrefusedObjects&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>The item <code>radar_pipeline_name: &quot;FrontRadarPipeline&quot;</code> tells the info about the radar detection pipeline, this file is at <code>/apollo/modules/perception/production/conf/perception/radar/front_radar_pipeline.config</code>. The file is as following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">model_configs &#123;</span><br><span class="line">  name: &quot;FrontRadarPipeline&quot;</span><br><span class="line">  version: &quot;1.0.0&quot;</span><br><span class="line">  string_params &#123;</span><br><span class="line">    name: &quot;Detector&quot;</span><br><span class="line">    value: &quot;ContiArsDetector&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  string_params &#123;</span><br><span class="line">    name: &quot;RoiFilter&quot;</span><br><span class="line">    value: &quot;HdmapRadarRoiFilter&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  string_params &#123;</span><br><span class="line">    name: &quot;Tracker&quot;</span><br><span class="line">    value: &quot;ContiArsTracker&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="III-Lidar-tracking-component-and-Multi-Sensor-fusion-component"><a href="#III-Lidar-tracking-component-and-Multi-Sensor-fusion-component" class="headerlink" title="III. Lidar tracking component and Multi-Sensor fusion component"></a>III. Lidar tracking component and Multi-Sensor fusion component</h3><p>These two components have the same structure and initialzation process as Lidar detection component, here will not illustrate again. </p>
+<h2 id="Proc-of-a-perception-component"><a href="#Proc-of-a-perception-component" class="headerlink" title="Proc() of a perception component"></a><code>Proc()</code> of a perception component</h2><p>The implementations of <code>Proc(message)</code> member function for the above perception component classes have similar process, it will basically do the following two things:</p>
+<ol>
+<li>InternalProc(in_message, out_message)</li>
+<li>writer_-&gt;Write(out_message)</li>
+</ol>
+<p>As <code>LidarDetectionComponent</code> <code>LidarTrackingComponent</code> and <code>MultiSensorFusionComponent</code> have the similar pipeline and stage structure, their <code>InternalProc()</code> are also having similiar processes insdie:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">InternalProc(in_message, out_message)</span><br><span class="line">    -&gt; lidar_detection_pipeline_-&gt;Process(data_frame)</span><br><span class="line">        -&gt; Pipeline::InnerProcess(data_frame)</span><br><span class="line">            -&gt; for loop: stage_ptr-&gt;Process(frame)</span><br></pre></td></tr></table></figure>
+<p>In our example case, the lidar detector <code>CNNSegmentation</code> is a stage in lidar detection pipeline, its <code>Process()</code> executes the following steps:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CNNSegmentation::Process(DataFrame* data_frame)</span><br><span class="line">    -&gt; Detect(options, lidar_frame)</span><br><span class="line">        -&gt; feature_generator_-&gt;Generate(original_cloud_, point2grid_)  // generate features</span><br><span class="line">           + inference_-&gt;Infer()                                       // model inference</span><br><span class="line">           + GetObjectsFromSppEngine(&amp;frame-&gt;segmented_objects)        // processing clustering</span><br></pre></td></tr></table></figure>
+
+<p>Other lidar detectors <code>CenterPoint</code> <code>MaskPillarsDetection</code> <code>PointPillarsDetection</code> have similar steps in <code>Process()</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CenterPointDetection::Process(DataFrame* data_frame)</span><br><span class="line">    -&gt; Detect(options, lidar_frame)</span><br><span class="line">        -&gt; DoInference(points_data, num_points, &amp;out_detections, &amp;out_labels, &amp;out_scores)</span><br><span class="line">           + FilterScore(&amp;out_detections, &amp;out_labels, &amp;out_scores, FLAGS_score_threshold, &amp;out_detections_final, &amp;out_labels_final)</span><br><span class="line">           + GetObjects(&amp;frame-&gt;segmented_objects, frame-&gt;lidar2world_pose, &amp;out_detections_final, &amp;out_labels_final)</span><br></pre></td></tr></table></figure>
+<p>This pipeline and stage structure provides a very flexible way to customize the perception process, user can easily add or delete or replace one stage in the pipeline. But for <code>RadarDetectionComponent</code>, its current <code>InterProc()</code> of <code>RadarDetectionComponent</code> does in a different way as following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. radar_preprocessor_-&gt;Preprocess(raw_obstacles, preprocessor_options, &amp;corrected_obstacles)</span><br><span class="line">2. radar_perception_-&gt;Perceive(corrected_obstacles, options, &amp;radar_objects) which includes: </span><br><span class="line">        detector_-&gt;Detect(corrected_obstacles, options.detector_options, detect_frame_ptr)</span><br><span class="line">        roi_filter_-&gt;RoiFilter(options.roi_filter_options, detect_frame_ptr)</span><br><span class="line">        tracker_-&gt;Track(*detect_frame_ptr, options.track_options, tracker_frame_ptr)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>To understand what the pipeline does and the data stream through each stage, it’s necessary to take a look at the input and output data types. From the <code>InternalProc</code> function interface can see the input and output message data types:</p>
+<ul>
+<li>LidarDetectionComponent:<br><code>bool InternalProc(const std::shared_ptr&lt;const drivers::PointCloud&gt;&amp; in_message, const std::shared_ptr&lt;LidarFrameMessage&gt;&amp; out_message)</code></li>
+<li>LidarTrackingComponent:<br><code>bool InternalProc(const std::shared_ptr&lt;const LidarFrameMessage&gt;&amp; in_message, const std::shared_ptr&lt;SensorFrameMessage&gt;&amp; out_message)</code></li>
+<li>RadarDetectionComponent:<br><code>bool InternalProc(const std::shared_ptr&lt;ContiRadar&gt;&amp; in_message, std::shared_ptr&lt;SensorFrameMessage&gt; out_message)</code></li>
+<li>MultiSensorFusionComponent:<br><code>bool InternalProc(const std::shared_ptr&lt;SensorFrameMessage const&gt;&amp; in_message, std::shared_ptr&lt;PerceptionObstacles&gt; out_message, std::shared_ptr&lt;SensorFrameMessage&gt; viz_message)</code></li>
+</ul>
+<p>So <code>LidarDetectionComponent</code> takes <code>PointCloud</code> data as input, and outputs <code>LidarFrameMessage</code> data type which contains <code>LidarFrame</code> type data:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct LidarFrame &#123;</span><br><span class="line">  std::shared_ptr&lt;base::AttributePointCloud&lt;base::PointF&gt;&gt; cloud;</span><br><span class="line">  std::shared_ptr&lt;base::AttributePointCloud&lt;base::PointD&gt;&gt; world_cloud;</span><br><span class="line">  double timestamp = 0.0;</span><br><span class="line">  std::shared_ptr&lt;base::HdmapStruct&gt; hdmap_struct = nullptr;</span><br><span class="line">  std::vector&lt;std::shared_ptr&lt;base::Object&gt;&gt; segmented_objects;</span><br><span class="line">  std::vector&lt;std::shared_ptr&lt;base::Object&gt;&gt; tracked_objects;</span><br><span class="line">  base::PointIndices roi_indices;</span><br><span class="line">  base::PointIndices non_ground_indices;</span><br><span class="line">  base::PointIndices secondary_indices;</span><br><span class="line">  base::SensorInfo sensor_info;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>LidarDetectionComponent</code> actually outputs to the <code>segmented_objects</code> in the <code>LidarFrame</code>. <code>LidarTrackingComponent</code> outputs to the <code>tracked_objects</code> in the <code>LidarFrame</code> first and transfers to another general data type <code>SensorFrameMessage</code> to hold the output, for the next step fusion. <code>SensorFrameMessage</code> data type contains <code>Frame</code> type data, and its kern is <code>objects</code> i.e. object info:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct alignas(16) Frame &#123;</span><br><span class="line">  SensorInfo sensor_info;</span><br><span class="line">  double timestamp = 0.0;</span><br><span class="line">  std::vector&lt;std::shared_ptr&lt;Object&gt;&gt; objects;</span><br><span class="line">  Eigen::Affine3d sensor2world_pose;</span><br><span class="line">  // sensor-specific frame supplements</span><br><span class="line">  LidarFrameSupplement lidar_frame_supplement;</span><br><span class="line">  RadarFrameSupplement radar_frame_supplement;</span><br><span class="line">  CameraFrameSupplement camera_frame_supplement;</span><br><span class="line">  UltrasonicFrameSupplement ultrasonic_frame_supplement;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>RadarDetectionComponent</code> is a little bit different on its input data type. <code>ContiRadar</code> is the raw message getting from the Conti radar sensor, it can be found at <code>modules/common_msgs/sensor_msgs/conti_radar.proto</code> file. Notice it doesn’t contain the raw point cloud data like Lidar detection input, but contains an obstacle array <code>ContiRadarObs</code> direct from radar. After checking the kern function of the radar detector <code>ContiArsDetector::Detect()</code>, it actually does the converting of the obstacle info to <code>Frame</code> data format via invoking <code>RawObs2Frame()</code>.</p>
+<p>The output data type <code>PerceptionObstacles</code> from <code>MultiSensorFusionComponent</code> can be found in <code>perception_obstacle.proto</code> file, it’s the final output from the perception module.</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://sigtry.io/2023/05/14/cyber-component-intro/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sigtry Tech.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/05/14/cyber-component-intro/" class="post-title-link" itemprop="url">Apollo Cyber Component Intro</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-05-14 19:49:50" itemprop="dateCreated datePublished" datetime="2023-05-14T19:49:50+02:00">2023-05-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-26 22:17:29" itemprop="dateModified" datetime="2023-05-26T22:17:29+02:00">2023-05-26</time>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>2.6k</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>9 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>Recently, I’m learning Apollo project which is an open source project for autonoumous driving. At beginning I hoped I can focus on only the perception module, but soon I realized it’s not possible to go without touching the bottom layer – Cyber RT framework.<br>At the time when I’m learning now, there was not much info about the code strucuture and process chain can be found from the official documents in the project. This blog is my summary on this(version 8.0). I will put it to the following parts:</p>
+<ul>
+<li>Important concept items in Cyber component</li>
+<li>Initialization of a Cyber component and data receiving&#x2F;processing inside </li>
+<li>Data transimit in Cyber framework</li>
+<li>Perception module break down</li>
+</ul>
+<h2 id="Important-concept-items-in-Cyber-component"><a href="#Important-concept-items-in-Cyber-component" class="headerlink" title="Important concept items in Cyber component"></a>Important concept items in Cyber component</h2><p>The official info <a target="_blank" rel="noopener" href="https://cyber-rt.readthedocs.io/en/latest/CyberRT_Terms.html">CyberRT Terms</a> gives definitions of important concept terms in Cyber framework. For people who are not familiar with ROS system like me, will still have no clue about those terms. I drew a picture below to show the basic structure of <code>Component</code> class. Basic <code>Component</code> class doesn’t have a <code>writer</code> memeber, but almost all perception components like Camera detection component and lidar detection component they have declared a <code>writer</code> as they need to output the process result to other components.</p>
+<p><img src="/../images/component_structure.png" alt="alt text"></p>
+<p>As the picture shows, a component can have multiple readers, each reader will use its receiver to subscribe a message type. The same rule for writers, a writer will use its tranmitter to send out the message. Transmitting or receiving a specific message type will use the channel id as the identifier, which is inside the <code>role_attr</code> member variable of a transmitter or a receiver as you can see in the picture.</p>
+<p>Component class encapsulates the data processing process for a module, and also provides developers the interfaces to customize the initialization and the process in <code>Init()</code> and <code>Proc()</code>, which are invoked inside <code>Initialize()</code> and <code>Process()</code> memeber functions.</p>
+<h2 id="Initialization-of-a-Cyber-component-and-data-receiving-x2F-processing-inside"><a href="#Initialization-of-a-Cyber-component-and-data-receiving-x2F-processing-inside" class="headerlink" title="Initialization of a Cyber component and data receiving&#x2F;processing inside"></a>Initialization of a Cyber component and data receiving&#x2F;processing inside</h2><p>Apollo provides two ways to launch a module: <code>mainboard</code> and <code>cyber_launch</code>. Example commands:\</p>
+<ul>
+<li><code>mainboard -d *.dag</code></li>
+<li><code>cyber_launch start *.launch</code></li>
+</ul>
+<p>In perception module, the order during loading a module is: <br><code>launch file -&gt; DAG file -&gt; Component</code> <br>A launch file can include several DAG module files, means it could start mulitiple modules. A DAG file is the config file of module topology, it includes the components which are put into this module.</p>
+<p>As <code>cyber_launch</code> will invoke <code>mainboard</code> to start a module, here I will break down the process of <code>mainboard</code>. From <code>mainboard.cc</code> we can know: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mainboard \</span><br><span class="line">    -&gt; moduleController::Init() \</span><br><span class="line">        -&gt; moduleController::LoadAll() \</span><br><span class="line">            -&gt; for loop of moduleController::LoadModule(DagConfig) \</span><br><span class="line">                -&gt; ClassLoadManager::CreateClassObj(Compnent_name) \</span><br><span class="line">                    -&gt; Component::Initialize(Component_config) \</span><br></pre></td></tr></table></figure>
+
+<p>In <code>Component.h</code> there are 5 partial template specializations for class template <code>Component</code>, which can handle one to four message type cases(described as M0,M1,M2,M3). Here we take the two message types case(M0,M1) as example to analyze the initialization process.</p>
+<p>Before diving into code, an important concept <code>RunMode</code> needs to be clarified first. <code>RunMode</code> is a simple enum, there are two mode types defined: </p>
+<ul>
+<li><code>MODE_SIMULATION</code></li>
+<li><code>MODE_REALITY</code></li>
+</ul>
+<p>And the default mode is set to <code>MODE_REALITY</code> in <code>cyber.pb.conf</code> file. <code>MODE_SIMULATION</code> is mainly used in test code. <br>The initialization process and data processing for those two modes are quite different. Here is the break down for each mode type:</p>
+<h3 id="I-MODE-REALITY"><a href="#I-MODE-REALITY" class="headerlink" title="I. MODE_REALITY"></a>I. <code>MODE_REALITY</code></h3><p>The initialization of a component under this mode has the following steps: \</p>
+<ol>
+<li>Create a node  <code>node_</code></li>
+<li>Execute user customized <code>Init()</code> function </li>
+<li>Load config for reader </li>
+<li>Create <code>reader1</code> for M1, create <code>reader0</code> for M0, put them all into <code>readers_</code> <br> 4.1Initialize readers with <code>reader_ptr-&gt;Init()</code></li>
+<li>Define function <code>func</code> which will invoke data process function of the messages M0,M1 </li>
+<li>Create a <code>DataVisitor&lt;M0, M1&gt;</code> <code>dv</code> with reader configs </li>
+<li>Create a <code>RoutineFactory</code> <code>factory = croutine::CreateRoutineFactory&lt;M0, M1&gt;(func, dv)</code>. It actually defines the coroutine function which will be used to create corountine in the next step </li>
+<li>Create a Task(coroutine) <code>sched-&gt;CreateTask(factory, node_-&gt;Name())</code></li>
+</ol>
+<p>We need to break down even deeper of some steps above (4.1, 5, 7, 8) to understand this whole process. </p>
+<p>In 4.1, look into the steps of <code>Reader&lt;MessageT&gt;::Init()</code> : <br>4.1.1 Define a lambda function <code>func</code> as following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">if (reader_func_ != nullptr) &#123;</span><br><span class="line">    func = [this](const std::shared_ptr&lt;MessageT&gt;&amp; msg) &#123;</span><br><span class="line">        this-&gt;Enqueue(msg);</span><br><span class="line">        this-&gt;reader_func_(msg);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    func = [this](const std::shared_ptr&lt;MessageT&gt;&amp; msg) &#123; </span><br><span class="line">        this-&gt;Enqueue(msg); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>4.1.2 Create a <code>DataVisitor&lt;MessageT&gt;</code> <code>dv</code> with the specific message type <br>4.1.3 Create a RoutineFactory <code>factory = croutine::CreateRoutineFactory&lt;MessageT&gt;(func, dv)</code> <br>4.1.4 Create a Task <code>sched-&gt;CreateTask(factory, croutine_name_)</code> <br>4.1.5 Create a receiver <code>receiver_</code>with message type config<br>4.1.6 Add this receiver into the channel topology as a listener of the corresponding reader </p>
+<p>Notice steps 4.1.1 to 4.1.4 are very similar to steps 5 to 8, it seems like repeating steps but actually not. In our case(M0, M1), there will be together 3 coroutines(named as <code>CRoutine</code> class in the project) created. The coroutine which is directly created in <code>Component::Initialize()</code> is with name <code>node_-&gt;Name()</code>, but the other 2 coroutines which are created in <code>Reader::Init()</code> are with name <code>role_attr_.node_name() + &quot;_&quot; + role_attr_.channel_name()</code>. Looking at the <code>func</code> defintion in 4.1.1, all readers under <code>MODE_REALITY</code> will be created without <code>reader_func_</code>, so it will go to <code>else</code> branch(<code>this-&gt;Enqueue(msg)</code>). <code>Enqueue(msg)</code> will execute <code>blocker_-&gt;Publish(msg)</code>，which writes <code>msg</code> into the message queue <code>published_msg_queue_</code> of <code>blocker_</code>.</p>
+<p>In 5, a lambda function <code>func</code> is defined as following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">auto func = [self](const std::shared_ptr&lt;M0&gt;&amp; msg0, const std::shared_ptr&lt;M1&gt;&amp; msg1) &#123;</span><br><span class="line">    auto ptr = self.lock();</span><br><span class="line">    if (ptr) &#123;</span><br><span class="line">      ptr-&gt;Process(msg0, msg1);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      AERROR &lt;&lt; &quot;Component object has been destroyed.&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>In 7, a coroutine function is defined as a lambda function as following. There are 5 function templates for <code>CreateRoutineFactory</code> to handle multiple message types. For the coroutine which is directly created in <code>Component::Initialize()</code>(we name it here as<code>cr</code>), the function <code>f</code> following is the <code>func</code> defined in step 5. For the coroutines which are crated in <code>Reader::Init()</code>(we name them here as <code>cr_M0</code>, <code>cr_M1</code>), the function <code>f</code> following is the <code>func</code> defined in step 4.1.1. So coroutine <code>cr</code> is in charge of fetching and processing the incoming messages(M0, M1 type), coroutine <code>cr_M0</code> will fetch the coming M0 message and push into the message queue, same for coroutine <code>cr_M1</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">factory.create_routine = [=]() &#123;</span><br><span class="line">    return [=]() &#123;</span><br><span class="line">        std::shared_ptr&lt;M0&gt; msg0;</span><br><span class="line">        std::shared_ptr&lt;M1&gt; msg1;</span><br><span class="line">        for (;;) </span><br><span class="line">        &#123;</span><br><span class="line">            CRoutine::GetCurrentRoutine()-&gt;set_state(RoutineState::DATA_WAIT);</span><br><span class="line">            if (dv-&gt;TryFetch(msg0, msg1)) &#123;</span><br><span class="line">            f(msg0, msg1);</span><br><span class="line">            CRoutine::Yield(RoutineState::READY);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">            CRoutine::Yield();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Till now, we know all the coroutines crerated during the component initialization and the jobs they will do. Next is to be clear about the event triggering process. \</p>
+<p>In 8, after the coroutine is created and dispatched(the dispatch policy is defined in <code>SchedulerClassic</code> and <code>SchedulerChoreography</code> class implemenation), an important call back function is registered to <code>DataVisitor</code> object <code>dv</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">visitor-&gt;RegisterNotifyCallback([this, task_id]() &#123;</span><br><span class="line">    if (cyber_unlikely(stop_.load())) &#123; return; &#125;</span><br><span class="line">    this-&gt;NotifyProcessor(task_id);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>From the definition, it seems to wake up the corotuine, and it should be triggered when new data&#x2F;messages come. Indeed it is, but the process is not so straightforward: <br>In step 4.1.5, a receiver is created with a lambda function input as following, this lambda function will be assigned to the member variable of <code>Receiver</code> class : <code>msg_listener_</code>. Another member function <code>OnNewMessage()</code> is a listener of new message data, when new message data comes, and it will execute callback function <code>msg_listener_</code>. I will show the loop of message transmitting and receiving in next section, here only focus on receiver side. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">CreateReceiver&lt;MessageT&gt;(</span><br><span class="line">  role_attr, [](const std::shared_ptr&lt;MessageT&gt;&amp; msg,</span><br><span class="line">                const transport::MessageInfo&amp; msg_info,</span><br><span class="line">                const proto::RoleAttributes&amp; reader_attr) &#123;</span><br><span class="line">    (void)msg_info;</span><br><span class="line">    (void)reader_attr;</span><br><span class="line">    PerfEventCache::Instance()-&gt;AddTransportEvent(</span><br><span class="line">        TransPerf::DISPATCH, reader_attr.channel_id(),</span><br><span class="line">        msg_info.seq_num());</span><br><span class="line">    data::DataDispatcher&lt;MessageT&gt;::Instance()-&gt;Dispatch(</span><br><span class="line">        reader_attr.channel_id(), msg);</span><br><span class="line">    PerfEventCache::Instance()-&gt;AddTransportEvent(</span><br><span class="line">        TransPerf::NOTIFY, reader_attr.channel_id(),</span><br><span class="line">        msg_info.seq_num());</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+<p>The trigger process when receiving new message data is: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">`OnNewMessage(msg, msg_info)` \</span><br><span class="line">    -&gt; `msg_listener` func \</span><br><span class="line">        -&gt; `DataDispatcher&lt;MessageT&gt;::Instance()-&gt;Dispatch(reader_attr.channel_id(), msg)` \</span><br><span class="line">            -&gt; `buffer-&gt;Fill(msg)` + `notifier_-&gt;Notify(channel_id)` \</span><br><span class="line">                -&gt; `notifier-&gt;callback()` \</span><br></pre></td></tr></table></figure>
+<p>To understand details in the above trigger process, it’s better to take a look at those classes: <code>DataVisitor</code>, <code>DataDispatcher</code>, <code>DataNotifier</code>, <code>ChannelBuffer</code>. <code>DataDispatcher</code> class and <code>DataNotifier</code> class are typical singleton pattern. In short words, when receives new M0 message data <code>msg0</code>, it will be written into <code>ChannelBuffer</code> <code>buffer_m0_</code>. And <code>notifier-&gt;callback()</code> will call exactly the callback function registered to <code>DataVisitor</code> object <code>dv</code> in step 8: <code>this-&gt;NotifyProcessor(task_id)</code>, which means it does indeed “wake up” the coroutine <code>cr_M0</code> to execute the coroutine function defined in step 7. The same process for receiving new M1 message data. \<br>For the coroutine <code>cr</code> we named before, its <code>TryFetch(msg0, msg1)</code> will fuse the new M0 and M1 message data first before processing the data: <code>data_fusion_-&gt;Fusion(&amp;next_msg_index_, m0, m1)</code>. In summary, all receivers push new coming data into the corresponding channel buffer, the main coroutine will fetch data from all buffers and process them.</p>
+<h3 id="II-MODE-SIMULATION"><a href="#II-MODE-SIMULATION" class="headerlink" title="II. MODE_SIMULATION"></a>II. <code>MODE_SIMULATION</code></h3><p>The initialization of a component under this mode has the following steps: \</p>
+<ol>
+<li>Create a node  <code>node_</code> </li>
+<li>Execute user customized <code>Init()</code> function </li>
+<li>Load config for readers</li>
+<li>Create <code>reader1</code> for M1 without reader function <br> 4.1 Initialize the reader with <code>reader_ptr-&gt;Init()</code></li>
+<li>Define function <code>func</code> which will invoke data process function of the messages M0,M1</li>
+<li>Create <code>reader0</code> for M0 with reader function <code>func</code> defined in last step, put all readers into <code>readers_</code> <br> 6.1Initialize readers with <code>reader_ptr-&gt;Init()</code></li>
+</ol>
+<p>In <code>MODE_REALITY</code>, readers are <code>Reader</code> class ojbects; in <code>MODE_SIMULATION</code>, readers are <code>IntraReader</code> class objects, its initialization <code>Init()</code> is quite different: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BlockerManager::Instance()-&gt;Subscribe&lt;MessageT&gt;(</span><br><span class="line">      this-&gt;role_attr_.channel_name(), this-&gt;role_attr_.qos_profile().depth(), this-&gt;role_attr_.node_name(),</span><br><span class="line">      std::bind(&amp;IntraReader&lt;MessageT&gt;::OnMessage, this, std::placeholders::_1));</span><br></pre></td></tr></table></figure>
+<p>Simliar to <code>OnNewMessage()</code> invokes <code>msg_listener</code> in <code>MODE_REALITY</code>, here is <code>OnMessage()</code> invokes <code>msg_callback_</code>. But <code>msg_callback_</code> is not defined when creating the receiver like <code>MODE_REALITY</code>. There is an important difference need to note: <code>MODE_SIMULATION</code> uses reader and writer classes <code>IntraReader</code> and <code>IntraWriter</code>, it does’t have transmitter and receiver level as <code>MODE_REALITY</code>, Which means it doesn’t use transmitter and receiver to handle messages but it uses <code>Blocker</code> instead. <code>OnMessage()</code> and <code>msg_callback_</code> are direct members of <code>IntraReader</code> class, but in <code>MODE_REALITY</code>, <code>OnNewMessage()</code> and <code>msg_listener</code> are on the receiver level. Also there will no coroutines and <code>Datavisitor</code> objects created. \</p>
+<p>The <code>msg_callback_</code> is defined in step 5 as following. It will be used to initialize <code>reader0</code> only. <code>reader1</code> is initialized without <code>msg_callback</code>. In 3 message type (M0,M1,M2) cases, <code>reader1</code> and <code>reader2</code> are initialized without <code>msg_callback_</code>. Because the below function does the really data processing for all new message data(M0 <code>msg0</code> as input, M1 <code>msg1</code> got from <code>blocker1</code>), it doesn’t need to repeat in every reader. Next session will talk about the process of tranmitting message data into <code>Blocker</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">auto blocker1 = blocker::BlockerManager::Instance()-&gt;GetBlocker&lt;M1&gt;(config.readers(1).channel());</span><br><span class="line"></span><br><span class="line">auto func = [self, blocker1](const std::shared_ptr&lt;M0&gt;&amp; msg0) &#123;</span><br><span class="line">    auto ptr = self.lock();</span><br><span class="line">    if (ptr) &#123;</span><br><span class="line">        if (!blocker1-&gt;IsPublishedEmpty()) &#123;</span><br><span class="line">            auto msg1 = blocker1-&gt;GetLatestPublishedPtr();</span><br><span class="line">            ptr-&gt;Process(msg0, msg1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">    AERROR &lt;&lt; &quot;Component object has been destroyed.&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="Data-transimit-in-Cyber-framework"><a href="#Data-transimit-in-Cyber-framework" class="headerlink" title="Data transimit in Cyber framework"></a>Data transimit in Cyber framework</h2><p>Here “data transmit” corresponds to the above session “data receiving&#x2F;processing” which means the message data. <br>Apollo provides an API <code>cyber_recorder play</code> to play back a record file, together with <code>mainboard</code> or <code>cyber_launch start</code> will simulate a whole data transmit-&gt;receive-&gt;process loop. So it’s a good entrance to understand the data transmitt process.</p>
+<h3 id="1-Break-down-of-cyber-recorder-play"><a href="#1-Break-down-of-cyber-recorder-play" class="headerlink" title="1. Break down of cyber_recorder play"></a>1. Break down of <code>cyber_recorder play</code></h3><p>First is the break down of <code>cyber_recorder/main.cc</code> : </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cyber_recorder command=&quot;play&quot; in main.cc </span><br><span class="line">    -&gt; player.Init() </span><br><span class="line">        -&gt; producer_-&gt;Init()</span><br><span class="line">    -&gt; player.Start()</span><br><span class="line">        -&gt; producer-&gt;Start() + consumer_::Start()</span><br></pre></td></tr></table></figure>
+<p>There are 3 classess used in this process: <code>Play</code>, <code>PlayTask</code>, <code>PlayTaskBuffer</code>, <code>PlayTaskProducer</code> and <code>PlayTaskConsumer</code>. First, look at <code>PlayTaskProducer::Init()</code>. It will execute the following two functions: \</p>
+<ul>
+<li><code>ReadRecordInfo()</code>: Create <code>recorder_reader</code> object(s) to read the channel message infos from record file(s), save them into <code>MessageTypeMap msg_types_</code>.  </li>
+<li><code>CreateWriters()</code>: Create a node <code>node_</code>, then for loop with <code>msg_types_</code> to create writers for all message types, put them into <code>WriterMap writers_</code>.</li>
+</ul>
+<p>Then we look at <code>PlayTaskProducer::Start()</code>. It will directly run a thread: \</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">produce_th_.reset(new std::thread(&amp;PlayTaskProducer::ThreadFunc, this))</span><br></pre></td></tr></table></figure>
+<p>And the <code>ThreadFunc</code> does the following: </p>
+<ul>
+<li>Calculate the number of data transmissions according to the start&#x2F;end time and time interval of the record, put it in a container object <code>record_viewer</code>;</li>
+<li>For loop with <code>record_viewer</code> to create a <code>PlayTask</code> and pushes it into <code>task_buffer_</code> each time. For each item, it will use its corresponding channel name to find the corresponding writer in <code>writers_</code>, and use this writer and raw message to create a <code>PlayTask</code>.</li>
+</ul>
+<p>Notice that class <code>Player</code> has member variables: \</p>
+<ul>
+<li><code>ConsumerPtr consumer_</code></li>
+<li><code>ProducerPtr producer_</code></li>
+<li><code>TaskBufferPtr task_buffer_</code>: a shared pointer which is shared among <code>Player</code>, <code>PlayTaskProducer</code> and <code>PlayTaskConsumer</code> classes.</li>
+</ul>
+<p>In <code>PlayTaskConsumer::Start</code> could find similar <code>ThreadFunc</code> as in <code>PlayTaskProducer::Start()</code>. It will execute:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">`task = task_buffer_-&gt;Front()` -&gt; `task-&gt;Play()` -&gt; `task_buffer_-&gt;PopFront()` </span><br></pre></td></tr></table></figure>
+<p>So the <code>producer_</code> object keeps pushing new <code>PlayTask</code> ojbects to <code>task_buffer_</code>, while <code>consumer_</code> keeps pulling <code>PlayTask</code> and executing <code>PlayTask::Play()</code>, and pops out from <code>task_buffer_</code> after execution finished.</p>
+<p>The only left thing is <code>PlayTask::Play()</code>. It executes the kernal job of transmitting data: <code>writer_-&gt;Write(msg_)</code>.</p>
+<h3 id="2-Data-transmitt-process"><a href="#2-Data-transmitt-process" class="headerlink" title="2. Data transmitt process"></a>2. Data transmitt process</h3><p>Before going into <code>Writer::Write()</code>, it’s necessary to know how this writer is initialized. In <code>NodeChannelImpl::CreateWriter()</code> can find the writer will be a <code>Writer</code> class object under <code>MODE_REALITY</code>, will be a <code>IntraWriter</code> class object under <code>MODE_SIMULATION</code>. </p>
+<p>I. <code>MODE_REALITY</code></p>
+<p>In <code>Writer::Init()</code>, it will do the following:</p>
+<ol>
+<li>Create a <code>Tranmitter</code> object <code>transmitter_</code></li>
+<li>Add this tranmitter into the channel topology (so the receivers can subscribe to this channel message)</li>
+</ol>
+<p>In step 1, according to the <code>mode</code> value, <code>CreateTransmitter()</code> will create <code>transmitter_</code> from one of the following classes:</p>
+<ul>
+<li>IntraTransmitter</li>
+<li>ShmTransmitter</li>
+<li>RtpsTransmitter</li>
+<li>HybridTransmitter (default)</li>
+</ul>
+<p>Notice this <code>mode</code> has nothing to do with the <code>RUN_MODE</code>, this mode means the relationship between communicating nodes under <code>MODE_REALITY</code> which has the transmitter and receiver level. There are 4 modes defined: INTRA means communicating in the process, SHM means communicating between the host process, RTPS means conmmunicating across the host, HYBRID means mixed with those 3 modes.</p>
+<p>After the writer initialization, we go to <code>Writer::Write()</code> to see inside. Here takes <code>INTRA</code> mode as example case.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">writer_-&gt;Write(msg_)</span><br><span class="line">    -&gt; transmitter_-&gt;Transmit(msg_ptr)</span><br><span class="line">        -&gt; dispatcher_-&gt;OnMessage(channel_id_, msg, msg_info)</span><br><span class="line">            -&gt; handler-&gt;Run(message, message_info)</span><br><span class="line">                -&gt; (*signals_[oppo_id])(msg, msg_info) </span><br></pre></td></tr></table></figure>
+<p>Don’t mix <code>IntraDispatcher</code> object <code>dispatcher_</code> with <code>DataDispatcher</code> class instance here, the first one is on transmitting side, the second one is on receiving side, both of them are singleton pattern. Notice <code>dispatcher_</code> is a shared pointer in both <code>IntraTransmitter</code> class and <code>IntraReceiver</code> class. </p>
+<p>To figure out what the last step <code>(*signals_[oppo_id])(msg, msg_info) </code> does, need to back to the receiver part. Still remember member function <code>Receiver&lt;M&gt;::OnNewMessage(msg, msg_info)</code> which is the beginning point of the receiving process, this function will be written into member variable <code>msg_listeners_</code> in <code>dispatcher_</code> object when <code>IntraReceiver</code> object initializes as following: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dispatcher_-&gt;AddListener&lt;M&gt;(this-&gt;attr_, std::bind(&amp;IntraReceiver&lt;M&gt;::OnNewMessage, this, std::placeholders::_1, std::placeholders::_2))</span><br><span class="line">    -&gt; handler-&gt;Connect(self_attr.id(), opposite_attr.id(), listener)</span><br><span class="line">        -&gt; signals_[oppo_id]-&gt;Connect(listener)</span><br></pre></td></tr></table></figure>
+<p>The last step <code>signals_[oppo_id]-&gt;Connect(listener)</code> will make <code>signals_[oppo_id]</code> as a callable object with the listener function, <code>(*signals_[oppo_id])(msg, msg_info)</code> will call the lisntener function <code>OnNewMessage(msg, msg_info)</code>. This is called the signal and slot mechanism. \</p>
+<p>So this is the whole loop of data transmitting and receiving process for <code>MODE_REALITY</code>.</p>
+<p>II. <code>MODE_SIMULATION</code></p>
+<p>In <code>IntraWriter::Init()</code>, it will create a <code>blocker</code> object according to the message type, and put it to <code>BlockerMap blockers_</code> in <code>BlockerManager</code> singleton instance.<br>About <code>IntraWriter::Write()</code> we can break down to: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">writer_-&gt;Write(msg_)</span><br><span class="line">    -&gt; blocker_manager_-&gt;Publish&lt;MessageT&gt;(this-&gt;role_attr_.channel_name(), msg)</span><br><span class="line">        -&gt; blocker-&gt;Publish(msg)</span><br><span class="line">            -&gt; Enqueue(msg)</span><br><span class="line">                -&gt; published_msg_queue_.push_front(msg)</span><br><span class="line">            -&gt; Notify(msg)</span><br><span class="line">                -&gt; call published_callbacks_</span><br></pre></td></tr></table></figure>
+<p>Remember we have known that <code>IntraReader::Init()</code> will do the following, it will register <code>OnMessage()</code> into <code>published_callbacks</code>, which is a member variable of <code>Blocker</code> class. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BlockerManager::Instance()-&gt;Subscribe&lt;MessageT&gt;(</span><br><span class="line">      this-&gt;role_attr_.channel_name(), this-&gt;role_attr_.qos_profile().depth(), this-&gt;role_attr_.node_name(),</span><br><span class="line">      std::bind(&amp;IntraReader&lt;MessageT&gt;::OnMessage, this, std::placeholders::_1))</span><br></pre></td></tr></table></figure>
+<p>So the data transmitting and receiving loop for <code>MODE_SIMULATION</code> is also clear.</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -224,6 +597,112 @@
 
 
 
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://sigtry.io/2023/04/14/signal-expansion/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sigtry Tech.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Sigtry">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/04/14/signal-expansion/" class="post-title-link" itemprop="url">Re-understanding the Fourier expansion and signal expansion</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-04-14 15:49:53" itemprop="dateCreated datePublished" datetime="2023-04-14T15:49:53+02:00">2023-04-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-26 22:14:26" itemprop="dateModified" datetime="2023-05-26T22:14:26+02:00">2023-05-26</time>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>1k</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>4 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>Why do we make Fourier transform to signals? The first thing that came to my mind for this question is that the Fourier transform has many nice features, it can transfer complex convolution in the time domain into a simple product in the frequency domain, it can simplify the filter design in frequency domain, its linearity, symmetry property etc. But those nice features can’t explain well why we need it but not other orthogonal expansions. While I’m looking for the answer to this question, my understanding of Fourier expansion gets refreshed and also extended to some applications of signal expansion in other fields.</p>
+<p>Transforming a signal to a domain gives a new representation of the signal, and the best transform of a signal is related to the problem you want to solve, it should greatly simplify the analysis and solving process to the problem. The same rule applies to the Fourier transform.  The answer for the question above is simply as: Fourier expansion is the best transform for the LTI system, because the complex exponential function is the eigenfunction of the LTI system. It means if we input a complex exponential signal to a LTI system, the output will still be a complex exponential signal, the only change will be the amplitude:</p>
+<p>$$HX&#x3D;kX$$</p>
+<p>$X$ is the eigenfunction $e^{j\omega t}$, $k$ is the system frequency response $H(j\omega)$, $H$ is the system function (also called as transfer function).</p>
+<p>So if we decompose the input as a series of eigenfunction, the analysis of the LTI system will be greatly simplified: We only need to figure out the constant coefficient $k$ which is the system frequency response $H(j\omega)$, then we can get the output of the LTI system even when the system function is complicated. A very important subset of LTI systems is the systems represented by a differential equation with linear constant coefficients. Fourier transform can convert differential or difference equations into polynomial equations, in frequency domain, the differential calculation is transformed into a simple multiplication, which greatly simplifies the complexity of the problem, therefore it’s very useful to this kind of system analysis. </p>
+<p>In parallel to the LTI system, there is also the LSI system(Linear Shift-Invariant System) in image processing. LSI system defines shift-invariant property in spatial domain: the input shift will lead to a corresponding shift in the output. The LSI system has the same eigenfunction – complex exponential function as the LTI system. We can use the same way of Fourier transform to analyze LSI system response or LSI filters in frequency domain. </p>
+<p>Till now, we only talk about Fourier transform in a deterministic way, i.e. on deterministic signals. The next thing that came to my mind is, is there a similar transform or expansion for random signals or random processes? Is the answer power spectral density (PSD) which is the Fourier transform of the autocorrelation function? It turns out there is something more general than PSD. </p>
+<p>To be clear, a random signal is an infinite signal in the time domain and does not have the conditions for integration, so it cannot be directly Fourier transformed. PSD defined from Fourier transform of the autocorrelation function is also known as spectral decomposition Theorems for stationary processes or stationary sequences. Here we mean generalized stationary process by stationary process. The statistical characteristics of a stationary process are completely determined by its correlation function, and the spectral function (or spectral density) of a stationary process completely describes its statistical characteristics. And for general random processes, this conclusion does not hold. In general random processes, Karhunen-Loève expansion provides a complete characterization. It decomposes the sample function of a random process with a set of orthogonal basis functions, and the decomposed coefficients are uncorrelated random variables. </p>
+<p>$$x(t)&#x3D;\lim_{N\rightarrow+\infty}\sum_{i&#x3D;1}^Nx_i(t)\phi(t), 0 \leq t \leq T$$</p>
+<p>This expansion is ensured by a integral equation:</p>
+<p>$$\lambda_j\phi_j(t)&#x3D;\int_0^TK_x(t,u)\phi_j(u)du$$</p>
+<p>$K_x(t,u)$ is the covariance function, $\lambda_j$ is called eigenvalue, basis function $\phi_j(t)$ is called eigenfunction. </p>
+<p>A special case in Karhunen-Loève expansion is, when the stochastic process is a stationary process, the basis function set turns out to be the complex exponential function. So $e^{j\omega t}$ is the eigenfunction of the stationary process,  the eigenvalue $\lambda$  is the power spectral density at frequency $\omega$.</p>
+<p>Karhunen-Loève expansion not only provides a theoretically complete characterization for stochastic processes, it has an important application in signal detection and estimation. With Karhunen-Loève expansion, we can transform the continuous-time signal detection to a set of uncorrelated random variables and build the detection statistics based on them. Especially under Gaussian random process, we can prove that those expansion coefficients are independent Gaussian random variables. In the simple binary detection, if we choose $\phi_1(t)&#x3D;s(t)$ as the first basis function in expansion, we will get the first expansion coefficient $r_1&#x3D;\int_0^Ts(t)r(t)dt$. This is a sufficient statistics for this detection, other basis functions in expansion don’t affect the decision at all. It’s also called the correlated receiver. In the general binary detection, we choose $\phi_1(t)&#x3D;s(t)$ as the first basis function and $\phi_2(t)&#x3D;[s_0(t)-\rho s_1(t)]&#x2F; \sqrt{1-\rho^2}$ as the second basis function in expansion, we get $r_1$ and $r_2$ and then construct the sufficient statistics with their difference. This can be generalized to M-ary detection under noise.</p>
+<p>Note that the correlated receiver for signal detection can also be directly deduced by maximum likelihood principle if the signal observations are uncorrelated with each other, but Karhunen-Loève expansion can generally apply for signal observations which may be correlated.</p>
+<p>In signal estimation, Karhunen-Loève expansion can give us the best linear time-varying filter(estimator) for a sample function of a random process under MSE metric, the filter is determined by the eigenfunction and eigenvalue of the covariance function of the random process. In practice, we usually choose the first K maximum items as a good approximation. This is also known as principal component analysis (PCA) in the data dimensionality reduction. </p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
 
 </div>
   </main>
@@ -245,13 +724,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="Word count total">0k</span>
+    <span title="Word count total">5k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="Reading time total">1 mins.</span>
+    <span title="Reading time total">19 mins.</span>
   </span>
 </div>
 <div class="busuanzi-count">
