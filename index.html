@@ -183,7 +183,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-08-27 11:59:08" itemprop="dateModified" datetime="2023-08-27T11:59:08+02:00">2023-08-27</time>
+      <time title="Modified: 2023-08-27 12:17:30" itemprop="dateModified" datetime="2023-08-27T12:17:30+02:00">2023-08-27</time>
     </span>
 
   
@@ -226,7 +226,8 @@ x(t)=\lim_{N\rightarrow+\infty}\sum_{i=1}^Nx_i(t)\phi(t), 0 \leq t \leq T
 \end{equation}\]</span></p>
 <p>This expansion is ensured by a integral equation:</p>
 <p><span class="math display">\[\begin{equation} \label{eq3}
-\]</span>_j_j(t)=_0^TK_x(t,u)_j(u)du \end{equation}$$</p>
+\lambda_j\phi_j(t)=\int_0^TK_x(t,u)\phi_j(u)du
+\end{equation}\]</span></p>
 <p><span class="math inline">\(K_x(t,u)\)</span> is the covariance function, <span class="math inline">\(\lambda_j\)</span> is called eigenvalue, basis function <span class="math inline">\(\phi_j(t)\)</span> is called eigenfunction.</p>
 <p>A special case in Karhunen-Loève expansion is, when the stochastic process is a stationary process, the basis function set turns out to be the complex exponential function. So <span class="math inline">\(e^{j\omega t}\)</span> is the eigenfunction of the stationary process, the eigenvalue <span class="math inline">\(\lambda\)</span> is the power spectral density at frequency <span class="math inline">\(\omega\)</span>.</p>
 <p>Karhunen-Loève expansion not only provides a theoretically complete characterization for stochastic processes, it has an important application in signal detection and estimation. With Karhunen-Loève expansion, we can transform the continuous-time signal detection to a set of uncorrelated random variables and build the detection statistics based on them. Especially under Gaussian random process, we can prove that those expansion coefficients are independent Gaussian random variables. In the simple binary detection, if we choose <span class="math inline">\(\phi_1(t)=s(t)\)</span> as the first basis function in expansion, we will get the first expansion coefficient <span class="math inline">\(r_1=\int_0^Ts(t)r(t)dt\)</span>. This is a sufficient statistics for this detection, other basis functions in expansion don’t affect the decision at all. It’s also called the correlated receiver. In the general binary detection, we choose <span class="math inline">\(\phi_1(t)=s(t)\)</span> as the first basis function and <span class="math inline">\(\phi_2(t)=[s_0(t)-\rho s_1(t)]/ \sqrt{1-\rho^2}\)</span> as the second basis function in expansion, we get <span class="math inline">\(r_1\)</span> and <span class="math inline">\(r_2\)</span> and then construct the sufficient statistics with their difference. This can be generalized to M-ary detection under noise.</p>
